@@ -16,6 +16,22 @@
 
 package com.securepreferences;
 
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
+import com.securepreferences.util.Base64;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
@@ -26,24 +42,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Build;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.securepreferences.util.Base64;
 
 /**
  * Wrapper class for Android's {@link SharedPreferences} interface, which adds a
@@ -87,11 +85,15 @@ public class SecurePreferences implements SharedPreferences {
 	 * @param context
 	 *            the caller's context
 	 */
-	public SecurePreferences(Context context) {
+	public SecurePreferences(Context context, String preferencesName ) {
 		// Proxy design pattern
 		if (SecurePreferences.sFile == null) {
-			SecurePreferences.sFile = PreferenceManager
-					.getDefaultSharedPreferences(context);
+			if( preferencesName!=null ) {
+				SecurePreferences.sFile = context.getSharedPreferences( preferencesName, Context.MODE_PRIVATE );
+			} else {
+				SecurePreferences.sFile = PreferenceManager
+						.getDefaultSharedPreferences( context );
+			}
 		}
 		// Initialize encryption/decryption key
 		try {
